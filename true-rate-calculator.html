@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>True Rate Calculator — Visionary Ops</title>
+    <meta name="description" content="Find out exactly what to charge as a freelancer or consultant. Free profitability calculator by Visionary Ops.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy-deep:   #0A1628;
+            --navy-brand:  #1B2A4A;
+            --navy-light:  #243652;
+            --gold:        #C4A35A;
+            --gold-light:  #E2C47A;
+            --white:       #FFFFFF;
+            --white-soft:  rgba(255,255,255,0.85);
+            --white-muted: rgba(255,255,255,0.5);
+            --white-faint: rgba(255,255,255,0.06);
+            --border:      rgba(255,255,255,0.09);
+            --border-gold: rgba(196,163,90,0.25);
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--navy-deep);
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 15% 60%, rgba(27,42,74,0.5) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 15%, rgba(196,163,90,0.05) 0%, transparent 45%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 48px 20px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            margin-bottom: 44px;
+            animation: fadeDown 0.55s ease both;
+        }
+
+        .brand-chip {
+            display: inline-block;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--gold);
+            border: 1px solid var(--border-gold);
+            padding: 5px 14px;
+            border-radius: 2px;
+            margin-bottom: 18px;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(26px, 5.5vw, 44px);
+            font-weight: 700;
+            line-height: 1.12;
+            margin-bottom: 14px;
+        }
+
+        h1 em { color: var(--gold); font-style: normal; }
+
+        .subtitle {
+            font-size: 15.5px;
+            color: var(--white-muted);
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.65;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--navy-brand);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 32px;
+            margin-bottom: 16px;
+            animation: fadeUp 0.55s ease both;
+        }
+
+        .card:nth-child(2) { animation-delay: 0.08s; }
+        .card:nth-child(2) ~ .card { animation-delay: 0.16s; }
+
+        .section-label {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-label::before {
+            content: '';
+            width: 3px;
+            height: 18px;
+            background: var(--gold);
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        /* ── Input Grid ── */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        @media (max-width: 560px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .card { padding: 22px; }
+        }
+
+        .field { display: flex; flex-direction: column; gap: 7px; }
+
+        label {
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white-muted);
+        }
+
+        .input-wrap { position: relative; }
+
+        .pre, .suf {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--white-muted);
+            pointer-events: none;
+        }
+
+        .pre { left: 13px; }
+        .suf { right: 13px; font-size: 12px; }
+
+        input[type="number"] {
+            width: 100%;
+            background: var(--white-faint);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 12px 38px 12px 34px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--white);
+            transition: border-color 0.18s, background 0.18s;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        input.no-pre { padding-left: 13px; }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--gold);
+            background: rgba(196,163,90,0.05);
+        }
+
+        .hint {
+            font-size: 11px;
+            color: var(--white-muted);
+            opacity: 0.65;
+            line-height: 1.4;
+        }
+
+        /* ── Live Rate Preview ── */
+        .rate-preview {
+            background: linear-gradient(135deg, rgba(196,163,90,0.09) 0%, rgba(196,163,90,0.02) 100%);
+            border: 1px solid var(--border-gold);
+            border-radius: 4px;
+            padding: 28px 20px;
+            text-align: center;
+            margin: 6px 0 16px;
+            animation: fadeUp 0.55s 0.22s ease both;
+        }
+
+        .rate-preview-label {
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        .rate-big {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(40px, 10vw, 68px);
+            font-weight: 700;
+            color: var(--white);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .rate-big sup { font-size: 0.45em; vertical-align: super; color: var(--gold); }
+
+        .rate-sub {
+            font-size: 13px;
+            color: var(--white-muted);
+        }
+
+        /* ── CTA ── */
+        .cta-wrap {
+            animation: fadeUp 0.55s 0.28s ease both;
+        }
+
+        .cta-card {
+            background: var(--navy-brand);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 24px 32px;
+        }
+
+        .btn-primary {
+            display: block;
+            width: 100%;
+            background: var(--gold);
+            color: var(--navy-deep);
+            border: none;
+            border-radius: 3px;
+            padding: 15px 24px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14.5px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            transition: background 0.18s, transform 0.1s;
+            text-align: center;
+        }
+
+        .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+        .btn-primary:active { transform: translateY(0); }
+
+        .cta-note {
+            text-align: center;
+            font-size: 11.5px;
+            color: var(--white-muted);
+            margin-top: 10px;
+            opacity: 0.75;
+        }
+
+        /* ── Modal ── */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8,16,30,0.92);
+            backdrop-filter: blur(10px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.28s;
+        }
+
+        .overlay.open { opacity: 1; pointer-events: all; }
+
+        .modal {
+            background: var(--navy-brand);
+            border: 1px solid var(--border-gold);
+            border-radius: 4px;
+            padding: 40px 36px;
+            max-width: 420px;
+            width: 100%;
+            transform: translateY(18px);
+            transition: transform 0.28s;
+            text-align: center;
+        }
+
+        .overlay.open .modal { transform: translateY(0); }
+
+        .modal-icon {
+            width: 52px;
+            height: 52px;
+            background: rgba(196,163,90,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+            font-size: 24px;
+        }
+
+        .modal h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 21px;
+            margin-bottom: 10px;
+        }
+
+        .modal p {
+            font-size: 14px;
+            color: var(--white-muted);
+            line-height: 1.65;
+            margin-bottom: 22px;
+        }
+
+        .email-in {
+            width: 100%;
+            background: var(--white-faint);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 13px 15px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            color: var(--white);
+            margin-bottom: 10px;
+            transition: border-color 0.18s;
+        }
+
+        .email-in:focus { outline: none; border-color: var(--gold); }
+        .email-in::placeholder { color: var(--white-muted); }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--gold);
+            color: var(--navy-deep);
+            border: none;
+            border-radius: 3px;
+            padding: 13px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+
+        .btn-submit:hover { background: var(--gold-light); }
+        .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        .modal-note { font-size: 11px; color: var(--white-muted); margin-top: 12px; opacity: 0.65; }
+        .err { font-size: 12.5px; color: #FF7070; display: none; margin-bottom: 8px; }
+
+        /* ── Results ── */
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeUp 0.45s ease both;
+        }
+
+        .results-hd {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .results-hd h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .results-hd p { font-size: 13.5px; color: var(--white-muted); }
+
+        .res-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 480px) { .res-grid { grid-template-columns: 1fr; } }
+
+        .res-card {
+            background: var(--white-faint);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 18px;
+        }
+
+        .res-card.hero {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, rgba(196,163,90,0.1), rgba(196,163,90,0.03));
+            border-color: var(--border-gold);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .res-label {
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white-muted);
+            margin-bottom: 6px;
+        }
+
+        .res-val {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        .res-card.hero .res-val {
+            font-size: clamp(34px, 7vw, 48px);
+            color: var(--gold);
+        }
+
+        .res-note { font-size: 12px; color: var(--white-muted); margin-top: 5px; line-height: 1.4; }
+
+        /* Breakdown bars */
+        .breakdown { margin-top: 26px; }
+
+        .bd-title {
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white-muted);
+            margin-bottom: 14px;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 11px;
+        }
+
+        .bar-name { font-size: 12px; color: var(--white-muted); width: 130px; flex-shrink: 0; }
+
+        .bar-track {
+            flex: 1;
+            height: 5px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.9s cubic-bezier(0.4,0,0.2,1);
+            width: 0%;
+        }
+
+        .fill-a { background: var(--gold); }
+        .fill-b { background: #D9836A; }
+        .fill-c { background: #7B9CD4; }
+
+        .bar-amt { font-size: 12px; font-weight: 600; color: var(--white-soft); width: 86px; text-align: right; flex-shrink: 0; }
+
+        /* Post-results CTA */
+        .post-cta {
+            background: var(--navy-brand);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 26px;
+            text-align: center;
+            margin-top: 14px;
+        }
+
+        .post-cta h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px;
+            margin-bottom: 8px;
+        }
+
+        .post-cta p {
+            font-size: 13.5px;
+            color: var(--white-muted);
+            margin-bottom: 16px;
+            line-height: 1.55;
+        }
+
+        .btn-outline {
+            display: inline-block;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            border-radius: 3px;
+            padding: 11px 26px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.18s, color 0.18s;
+        }
+
+        .btn-outline:hover { background: var(--gold); color: var(--navy-deep); }
+
+        .btn-reset {
+            display: block;
+            background: none;
+            border: none;
+            color: var(--white-muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: underline;
+            margin: 18px auto 0;
+        }
+
+        .btn-reset:hover { color: var(--white); }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            margin-top: 52px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 14px;
+            color: var(--white-muted);
+        }
+
+        .footer-name em { color: var(--gold); font-style: normal; }
+        .footer-tag { font-size: 11px; color: var(--white-muted); opacity: 0.45; margin-top: 4px; }
+
+        /* ── Animations ── */
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+    <header class="header">
+        <div class="brand-chip">Visionary Ops — Free Tool</div>
+        <h1>Know Your <em>True Rate</em></h1>
+        <p class="subtitle">Most freelancers and consultants charge significantly below what they actually need. This calculator shows you the exact number — and the math behind it.</p>
+    </header>
+
+    <!-- Calculator -->
+    <div id="calc-section">
+
+        <div class="card">
+            <div class="section-label">Income &amp; Costs</div>
+            <div class="grid-2">
+                <div class="field">
+                    <label>Desired Annual Take-Home</label>
+                    <div class="input-wrap">
+                        <span class="pre">$</span>
+                        <input type="number" id="income" value="80000" min="0">
+                    </div>
+                    <span class="hint">What you want after tax, in your pocket</span>
+                </div>
+                <div class="field">
+                    <label>Annual Business Expenses</label>
+                    <div class="input-wrap">
+                        <span class="pre">$</span>
+                        <input type="number" id="expenses" value="5000" min="0">
+                    </div>
+                    <span class="hint">Tools, software, subscriptions, equipment</span>
+                </div>
+                <div class="field">
+                    <label>Self-Employment Tax Rate</label>
+                    <div class="input-wrap">
+                        <input type="number" id="tax" value="30" min="0" max="70" class="no-pre">
+                        <span class="suf">%</span>
+                    </div>
+                    <span class="hint">Income + self-employment tax combined</span>
+                </div>
+                <div class="field">
+                    <label>Target Profit Margin</label>
+                    <div class="input-wrap">
+                        <input type="number" id="margin" value="20" min="0" max="90" class="no-pre">
+                        <span class="suf">%</span>
+                    </div>
+                    <span class="hint">Buffer above your break-even rate</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-label">Your Time</div>
+            <div class="grid-2">
+                <div class="field">
+                    <label>Weeks Worked Per Year</label>
+                    <div class="input-wrap">
+                        <input type="number" id="weeks" value="48" min="1" max="52" class="no-pre">
+                        <span class="suf">wks</span>
+                    </div>
+                    <span class="hint">52 minus vacation, sick, and public holidays</span>
+                </div>
+                <div class="field">
+                    <label>Working Hours Per Day</label>
+                    <div class="input-wrap">
+                        <input type="number" id="hours" value="8" min="1" max="16" class="no-pre">
+                        <span class="suf">hrs</span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Billable Hours Percentage</label>
+                    <div class="input-wrap">
+                        <input type="number" id="billable" value="70" min="5" max="100" class="no-pre">
+                        <span class="suf">%</span>
+                    </div>
+                    <span class="hint">Time spent on actual paid client work</span>
+                </div>
+                <div class="field">
+                    <label>Working Days Per Week</label>
+                    <div class="input-wrap">
+                        <input type="number" id="days" value="5" min="1" max="7" class="no-pre">
+                        <span class="suf">days</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live rate preview -->
+        <div class="rate-preview">
+            <div class="rate-preview-label">Your True Hourly Rate</div>
+            <div class="rate-big"><sup>$</sup><span id="live-rate">0</span></div>
+            <div class="rate-sub">per billable hour — the floor below which you lose money</div>
+        </div>
+
+        <div class="cta-wrap">
+            <div class="cta-card">
+                <button class="btn-primary" onclick="openModal()">Unlock My Full Profitability Report →</button>
+                <p class="cta-note">Free. Includes revenue targets, time cost breakdown, and margin analysis — no payment required.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Results (revealed after email capture) -->
+    <div id="results" class="results">
+        <div class="card">
+            <div class="results-hd">
+                <h2>Your Profitability Report</h2>
+                <p>Adjust the inputs above to recalculate any figure instantly.</p>
+            </div>
+
+            <div class="res-grid">
+                <div class="res-card hero">
+                    <div class="res-label">True Hourly Rate to Charge</div>
+                    <div class="res-val" id="r-rate">$0/hr</div>
+                    <div class="res-note">Anything below this and you're operating at a loss before a single expense is paid</div>
+                </div>
+                <div class="res-card">
+                    <div class="res-label">Annual Revenue Target</div>
+                    <div class="res-val" id="r-annual">$0</div>
+                    <div class="res-note">Gross revenue required to hit your goal</div>
+                </div>
+                <div class="res-card">
+                    <div class="res-label">Monthly Revenue Target</div>
+                    <div class="res-val" id="r-monthly">$0</div>
+                    <div class="res-note">Minimum to stay on track each month</div>
+                </div>
+                <div class="res-card">
+                    <div class="res-label">Weekly Revenue Target</div>
+                    <div class="res-val" id="r-weekly">$0</div>
+                    <div class="res-note">What each working week needs to produce</div>
+                </div>
+                <div class="res-card">
+                    <div class="res-label">Billable Hours / Year</div>
+                    <div class="res-val" id="r-bill-hrs">0</div>
+                    <div class="res-note">Hours available to sell to clients</div>
+                </div>
+                <div class="res-card">
+                    <div class="res-label">Non-Billable Hours / Year</div>
+                    <div class="res-val" id="r-nonbill-hrs">0</div>
+                    <div class="res-note">Admin, marketing, meetings — unpaid time</div>
+                </div>
+                <div class="res-card">
+                    <div class="res-label">Effective Daily Rate</div>
+                    <div class="res-val" id="r-daily">$0</div>
+                    <div class="res-note">Based on your billable hours per day</div>
+                </div>
+                <div class="res-card">
+                    <div class="res-label">Rate With Profit Margin</div>
+                    <div class="res-val" id="r-margin">$0/hr</div>
+                    <div class="res-note">Your target rate including buffer</div>
+                </div>
+            </div>
+
+            <!-- Revenue Breakdown Bars -->
+            <div class="breakdown">
+                <div class="bd-title">Where Your Revenue Goes</div>
+                <div class="bar-row">
+                    <span class="bar-name">Take-home income</span>
+                    <div class="bar-track"><div class="bar-fill fill-a" id="bar-a"></div></div>
+                    <span class="bar-amt" id="lbl-a">$0</span>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-name">Business expenses</span>
+                    <div class="bar-track"><div class="bar-fill fill-b" id="bar-b"></div></div>
+                    <span class="bar-amt" id="lbl-b">$0</span>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-name">Tax provision</span>
+                    <div class="bar-track"><div class="bar-fill fill-c" id="bar-c"></div></div>
+                    <span class="bar-amt" id="lbl-c">$0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="post-cta">
+            <h3>Want to hit this number faster?</h3>
+            <p>Visionary Ops breaks down the AI tools, workflows, and automation strategies operators use to build more revenue in less time — delivered regularly, straight to your inbox.</p>
+            <a href="https://visionaryops.substack.com" class="btn-outline" target="_blank" rel="noopener">Read the Newsletter →</a>
+        </div>
+
+        <button class="btn-reset" onclick="reset()">← Recalculate with different numbers</button>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-name"><em>Visionary Ops</em></div>
+        <div class="footer-tag">Think it. Build it. Live it.</div>
+    </footer>
+
+</div>
+
+<!-- Email Modal -->
+<div class="overlay" id="overlay">
+    <div class="modal">
+        <div class="modal-icon">📊</div>
+        <h2>Your Report Is Ready</h2>
+        <p>Drop your email below to unlock the full breakdown — revenue targets, time cost analysis, profit margin, and your effective daily rate.</p>
+        <input type="email" class="email-in" id="email-in" placeholder="your@email.com">
+        <p class="err" id="err-msg">Please enter a valid email address.</p>
+        <button class="btn-submit" id="btn-sub">Unlock My Report →</button>
+        <p class="modal-note">No spam. Practical AI and business strategies, regularly.</p>
+    </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────
+   CONFIGURATION
+   N8N_WEBHOOK: paste your n8n webhook URL here.
+   In n8n: create a new Webhook node → set method to POST
+   → copy the URL it gives you → paste below.
+   n8n then handles adding the email to EmailOctopus,
+   keeping your API key server-side and secure.
+   ───────────────────────────────────────────────────────── */
+const N8N_WEBHOOK = 'https://presume-stony-marathon.ngrok-free.dev/webhook/rate-calculator-signup';
+/* ───────────────────────────────────────────────────────── */
+
+const fmt  = n => '$' + Math.round(n).toLocaleString('en-US');
+const fmtN = n => Math.round(n).toLocaleString('en-US');
+
+function vals() {
+    const tax = Math.min(+document.getElementById('tax').value || 0, 99); // cap at 99% to prevent division by zero
+    return {
+        income:   +document.getElementById('income').value   || 0,
+        expenses: +document.getElementById('expenses').value || 0,
+        tax,
+        margin:   +document.getElementById('margin').value   || 0,
+        weeks:    Math.max(+document.getElementById('weeks').value    || 48, 1),
+        hours:    Math.max(+document.getElementById('hours').value    || 8,  1),
+        billable: Math.min(Math.max(+document.getElementById('billable').value || 70, 1), 100),
+        days:     Math.max(+document.getElementById('days').value     || 5,  1),
+    };
+}
+
+function calc() {
+    const v = vals();
+    const taxMult      = 1 / (1 - v.tax / 100);
+    const grossNeeded  = v.income * taxMult;
+    const annualTarget = grossNeeded + v.expenses;
+    const totalHrs     = v.weeks * v.days * v.hours;
+    const billHrs      = totalHrs * (v.billable / 100);
+    const nonBillHrs   = totalHrs - billHrs;
+    const trueRate     = billHrs > 0 ? annualTarget / billHrs : 0;
+    const marginRate   = trueRate * (1 + v.margin / 100);
+    const taxProvision = grossNeeded - v.income;
+    const billHrsDay   = v.hours * (v.billable / 100);
+    const dailyRate    = trueRate * billHrsDay;
+
+    return {
+        trueRate, marginRate, annualTarget, taxProvision,
+        monthly: annualTarget / 12,
+        weekly:  annualTarget / v.weeks,   // per working week, not per calendar week
+        billHrs, nonBillHrs, dailyRate,
+        income:   v.income,
+        expenses: v.expenses
+    };
+}
+
+function updatePreview() {
+    const { trueRate } = calc();
+    document.getElementById('live-rate').textContent = Math.round(trueRate).toLocaleString('en-US');
+}
+
+function updateResults() {
+    const r = calc();
+    document.getElementById('r-rate').textContent        = fmt(r.trueRate) + '/hr';
+    document.getElementById('r-annual').textContent      = fmt(r.annualTarget);
+    document.getElementById('r-monthly').textContent     = fmt(r.monthly);
+    document.getElementById('r-weekly').textContent      = fmt(r.weekly);
+    document.getElementById('r-bill-hrs').textContent    = fmtN(r.billHrs);
+    document.getElementById('r-nonbill-hrs').textContent = fmtN(r.nonBillHrs);
+    document.getElementById('r-daily').textContent       = fmt(r.dailyRate);
+    document.getElementById('r-margin').textContent      = fmt(r.marginRate) + '/hr';
+
+    const total = r.annualTarget;
+    document.getElementById('lbl-a').textContent = fmt(r.income);
+    document.getElementById('lbl-b').textContent = fmt(r.expenses);
+    document.getElementById('lbl-c').textContent = fmt(r.taxProvision);
+
+    setTimeout(() => {
+        if (total <= 0) {
+            ['bar-a','bar-b','bar-c'].forEach(id => document.getElementById(id).style.width = '0%');
+            return;
+        }
+        document.getElementById('bar-a').style.width = ((r.income      / total) * 100) + '%';
+        document.getElementById('bar-b').style.width = ((r.expenses    / total) * 100) + '%';
+        document.getElementById('bar-c').style.width = ((r.taxProvision / total) * 100) + '%';
+    }, 120);
+}
+
+function openModal() {
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('email-in').focus();
+}
+
+function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+}
+
+document.getElementById('overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('overlay')) closeModal();
+});
+
+document.getElementById('email-in').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSubmit();
+});
+
+document.getElementById('btn-sub').addEventListener('click', handleSubmit);
+
+async function handleSubmit() {
+    const emailEl = document.getElementById('email-in');
+    const errEl   = document.getElementById('err-msg');
+    const btnEl   = document.getElementById('btn-sub');
+    const email   = emailEl.value.trim();
+    const valid   = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if (!valid) { errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+    btnEl.textContent = 'One moment...';
+    btnEl.disabled = true;
+
+    try {
+        await fetch(N8N_WEBHOOK, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, source: 'true-rate-calculator' })
+        });
+    } catch (e) {
+        /* Silently continue — tool still works if webhook is unreachable */
+    }
+
+    closeModal();
+    reveal();
+}
+
+function reveal() {
+    updateResults();
+    const res = document.getElementById('results');
+    res.classList.add('show');
+    setTimeout(() => res.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+function reset() {
+    document.getElementById('results').classList.remove('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* Live preview on every input change */
+document.querySelectorAll('input[type="number"]').forEach(el => {
+    el.addEventListener('input', () => {
+        updatePreview();
+        if (document.getElementById('results').classList.contains('show')) updateResults();
+    });
+});
+
+updatePreview();
+</script>
+
+</body>
+</html>
